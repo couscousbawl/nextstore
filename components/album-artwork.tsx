@@ -1,3 +1,5 @@
+'use client';
+
 import Image from "next/image"
 import { PlusCircledIcon } from "@radix-ui/react-icons"
 
@@ -17,7 +19,7 @@ import { Album } from "../data/albums"
 import { playlists } from "../data/playlists"
 
 interface AlbumArtworkProps extends React.HTMLAttributes<HTMLDivElement> {
-  album: Album
+  album: any
   aspectRatio?: "portrait" | "square"
   width?: number
   height?: number
@@ -37,7 +39,7 @@ export function AlbumArtwork({
         <ContextMenuTrigger>
           <div className="overflow-hidden rounded-md">
             <Image
-              src={album.cover}
+              src={album.thumbnail?.url}
               alt={album.name}
               width={width}
               height={height}
@@ -88,7 +90,7 @@ export function AlbumArtwork({
       </ContextMenu>
       <div className="space-y-1 text-sm">
         <h3 className="font-medium leading-none">{album.name}</h3>
-        <p className="text-xs text-muted-foreground">{album.artist}</p>
+        <p className="text-xs text-muted-foreground">{JSON.stringify(album.pricing?.priceRange.start.gross.amount)}</p>
       </div>
     </div>
   )

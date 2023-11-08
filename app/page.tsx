@@ -24,19 +24,54 @@ export const metadata: Metadata = {
   description: "Example music app using the components.",
 }
 
-export default function MusicPage() {
+export default async function ProductListPage() {
+  const response = await fetch(`https://iadh-store-12237.eu.saleor.cloud/graphql/`, {
+    method: "POST",
+    headers: {
+      "Content-Type" : "application/json"
+    },
+    body: JSON.stringify({
+      query: `
+        query MyQuery {
+          products(first: 20, channel: "default-channel"){
+            edges {
+              node {
+                id
+                name
+                thumbnail(size: 2048, format:AVIF) {
+                  url
+                }
+                pricing {
+                  priceRange {
+                    start {
+                      gross {
+                        amount
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      `
+    })
+  })
+
+  const { data } = await response.json();
+
   return (
     <>
       <div className="md:hidden">
         <Image
-          src="/examples/music-light.png"
+          src=""
           width={1280}
           height={1114}
           alt="Music"
           className="block dark:hidden"
         />
         <Image
-          src="/examples/music-dark.png"
+          src=""
           width={1280}
           height={1114}
           alt="Music"
@@ -87,10 +122,10 @@ export default function MusicPage() {
                       <div className="relative">
                         <ScrollArea>
                           <div className="flex space-x-4 pb-4">
-                            {listenNowAlbums.map((album) => (
+                            {data.products.edges.map(({node : product}: any) => (
                               <AlbumArtwork
-                                key={album.name}
-                                album={album}
+                                key={product.id}
+                                album={product}
                                 className="w-[250px]"
                                 aspectRatio="portrait"
                                 width={250}
