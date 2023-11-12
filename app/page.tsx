@@ -18,47 +18,41 @@ import { PodcastEmptyPlaceholder } from "../components/podcast-empty-placeholder
 import { Sidebar } from "../components/sidebar"
 import { listenNowAlbums, madeForYouAlbums } from "../data/albums"
 import { playlists } from "../data/playlists"
+import { ProductListDocument, ProductListQuery, TypedDocumentString } from "@/gql/graphql"
+import { GraphQLError } from "graphql"
 
 export const metadata: Metadata = {
   title: "Music App",
   description: "Example music app using the components.",
 }
 
-export default async function ProductListPage() {
+type GraphQLResponse<GraphQLData> = { data: GraphQLData } | { errors: GraphQLError[] };
+
+const execute = async <Result, Variables>(document: TypedDocumentString<Result, Variables>): Promise<Result> => {
   const response = await fetch(`https://iadh-store-12237.eu.saleor.cloud/graphql/`, {
     method: "POST",
     headers: {
       "Content-Type" : "application/json"
     },
     body: JSON.stringify({
-      query: `
-        query MyQuery {
-          products(first: 20, channel: "default-channel"){
-            edges {
-              node {
-                id
-                name
-                thumbnail(size: 2048, format:AVIF) {
-                  url
-                }
-                pricing {
-                  priceRange {
-                    start {
-                      gross {
-                        amount
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      `
+      query: document.toString()
     })
   })
 
-  const { data } = await response.json();
+  const result = (await response.json()) as GraphQLResponse<Result>;
+  if ('errors' in result){
+    throw new Error(result.errors[0].message); 
+  }
+
+  return result.data;
+};
+
+export default async function ProductListPage() {
+  const data = await execute(ProductListDocument);
+
+  if (!data.products){
+    return null;
+  }
 
   return (
     <>
@@ -122,10 +116,10 @@ export default async function ProductListPage() {
                       <div className="relative">
                         <ScrollArea>
                           <div className="flex space-x-4 pb-4">
-                            {data.products.edges.map(({node : product}: any) => (
+                            {data.products.edges.slice(0, 8).map(({node : product}: any) => (
                               <AlbumArtwork
                                 key={product.id}
-                                album={product}
+                                product={product}
                                 className="w-[250px]"
                                 aspectRatio="portrait"
                                 width={250}
@@ -148,10 +142,10 @@ export default async function ProductListPage() {
                       <div className="relative">
                         <ScrollArea>
                           <div className="flex space-x-4 pb-4">
-                            {madeForYouAlbums.map((album) => (
+                          {data.products.edges.slice(0, 8).map(({node : product}: any) => (
                               <AlbumArtwork
-                                key={album.name}
-                                album={album}
+                                key={product.id}
+                                product={product}
                                 className="w-[150px]"
                                 aspectRatio="square"
                                 width={150}

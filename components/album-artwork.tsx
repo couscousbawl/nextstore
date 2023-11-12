@@ -17,16 +17,17 @@ import {
 
 import { Album } from "../data/albums"
 import { playlists } from "../data/playlists"
+import { ProductFragment, ProductListQuery } from "@/gql/graphql";
 
 interface AlbumArtworkProps extends React.HTMLAttributes<HTMLDivElement> {
-  album: any
+  product: ProductFragment
   aspectRatio?: "portrait" | "square"
   width?: number
   height?: number
 }
 
 export function AlbumArtwork({
-  album,
+  product,
   aspectRatio = "portrait",
   width,
   height,
@@ -38,16 +39,16 @@ export function AlbumArtwork({
       <ContextMenu>
         <ContextMenuTrigger>
           <div className="overflow-hidden rounded-md">
-            <Image
-              src={album.thumbnail?.url}
-              alt={album.name}
+            {product.media && <Image
+              src={product.media[0].url}
+              alt={product.name}
               width={width}
               height={height}
               className={cn(
                 "h-auto w-auto object-cover transition-all hover:scale-105",
                 aspectRatio === "portrait" ? "aspect-[3/4]" : "aspect-square"
               )}
-            />
+            /> }
           </div>
         </ContextMenuTrigger>
         <ContextMenuContent className="w-40">
@@ -89,8 +90,8 @@ export function AlbumArtwork({
         </ContextMenuContent>
       </ContextMenu>
       <div className="space-y-1 text-sm">
-        <h3 className="font-medium leading-none">{album.name}</h3>
-        <p className="text-xs text-muted-foreground">{JSON.stringify(album.pricing?.priceRange.start.gross.amount)}</p>
+        <h3 className="font-medium leading-none">{product.category?.name}</h3>
+        <p className="text-xs text-muted-foreground">{JSON.stringify(product.pricing?.priceRange?.start?.gross?.amount)}</p>
       </div>
     </div>
   )

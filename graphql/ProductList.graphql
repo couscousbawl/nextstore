@@ -1,0 +1,32 @@
+query ProductList {
+  products(first: 20, channel: "default-channel"){
+    edges {
+      node {
+        ...Product
+      }
+    }
+  }
+}
+
+fragment Product on Product {
+    id
+        name
+        category {
+            name
+        }
+        thumbnail {
+          url
+        }
+        media {
+            url
+        }
+        pricing {
+          priceRange {
+            start {
+              gross {
+                amount
+              }
+            }
+          }
+        }
+}
